@@ -1,0 +1,56 @@
+{
+  "investigator@forensics.gov": {
+    "id": "USR-001",
+    "email": "investigator@forensics.gov",
+    "name": "Special Agent John Miller",
+    "role": "Lead Forensic Investigator",
+    "badge": "BADGE-4492",
+    "clearance": "Level 4 - Secret",
+    "password_hash": "b84076d2fce75caf8e0d836cb23c8046ad3208422fefcdbb2a5670cccaa8af21"
+  },
+  "analyst@forensics.gov": {
+    "id": "USR-002",
+    "email": "analyst@forensics.gov",
+    "name": "Dr. Sarah Lin",
+    "role": "Senior Cyber Forensic Analyst",
+    "badge": "LAB-8812",
+    "clearance": "Level 3 - Restricted",
+    "password_hash": "b84076d2fce75caf8e0d836cb23c8046ad3208422fefcdbb2a5670cccaa8af21"
+  },
+  "custodian@forensics.gov": {
+    "id": "USR-003",
+    "email": "custodian@forensics.gov",
+    "name": "Commander Marcus Vance",
+    "role": "Master Evidence Vault Custodian",
+    "badge": "VAULT-0019",
+    "clearance": "Level 5 - Top Secret",
+    "password_hash": "b84076d2fce75caf8e0d836cb23c8046ad3208422fefcdbb2a5670cccaa8af21"
+  },
+  "auditor@justice.gov": {
+    "id": "USR-004",
+    "email": "auditor@justice.gov",
+    "name": "Hon. Justice Elena Rostova",
+    "role": "Judicial Court Compliance Auditor",
+    "badge": "COURT-9104",
+    "clearance": "Judicial Verification",
+    "password_hash": "b84076d2fce75caf8e0d836cb23c8046ad3208422fefcdbb2a5670cccaa8af21"
+  },
+  "vikasnagaraj636@gmail.com": {
+    "id": "USR-11AE5F",
+    "email": "vikasnagaraj636@gmail.com",
+    "name": "tuyuvyuvuv",
+    "role": "Lead Forensic Investigator",
+    "badge": "BADGE-9519",
+    "clearance": "Level 3 - Restricted",
+    "password_hash": "b1a347026137fd6eb795f2905f8ee7add35d9d9fb343646e1d75875915b4a363"
+  },
+  "vikas@gmail.com": {
+    "id": "USR-66271B",
+    "email": "vikas@gmail.com",
+    "name": "hyfkgkug",
+    "role": "Senior Cyber Forensic Analyst",
+    "badge": "BADGE-4997",
+    "clearance": "Level 3 - Restricted",
+    "password_hash": "211bc0b488e1fc251c35a0fdae412a7729ad8ee3cb52da4af4e5eea13f1e1d6e"
+  }
+}

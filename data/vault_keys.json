@@ -1,0 +1,10 @@
+{
+  "422749cce4b1ffe11bfe5a86f6187a8a2e5e8e6cad6119e0f1a6b1e899507476": {
+    "salt_hex": "34323237343963636534623166666531",
+    "iv_hex": "f774a54073a6b763e256883a",
+    "vault_file": "422749cce4b1ffe11bfe5a86f6187a8a2e5e8e6cad6119e0f1a6b1e899507476.vault",
+    "raw_size": 5400,
+    "compressed_size": 65,
+    "vault_size": 93
+  }
+}

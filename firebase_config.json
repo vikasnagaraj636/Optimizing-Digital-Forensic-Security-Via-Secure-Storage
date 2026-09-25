@@ -1,0 +1,9 @@
+{
+  "firebase_enabled": true,
+  "apiKey": "AIzaSyDemoForensicKeyPlaceholder2026",
+  "authDomain": "digital-forensics-secure-vault.firebaseapp.com",
+  "projectId": "digital-forensics-secure-vault",
+  "storageBucket": "digital-forensics-secure-vault.appspot.com",
+  "messagingSenderId": "109876543210",
+  "appId": "1:109876543210:web:abcdef1234567890"
+}

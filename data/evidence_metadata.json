@@ -1,0 +1,38 @@
+{
+  "EV-TEST-101": {
+    "evidence_id": "EV-TEST-101",
+    "case_id": "CASE-UNIT-01",
+    "filename": "system_auth.log",
+    "classification": "Confidential",
+    "custodian": "Detective Sherlock",
+    "content_hash": "422749cce4b1ffe11bfe5a86f6187a8a2e5e8e6cad6119e0f1a6b1e899507476",
+    "blake2b_hash": "6828e062f14c9b8e1656690011cc1def06b457276669e8ed155f6423738c1959216dc48bb02ea44603971cb099cdace2dcfd6649380c2b310794608513dbc6b0",
+    "vault_file": "422749cce4b1ffe11bfe5a86f6187a8a2e5e8e6cad6119e0f1a6b1e899507476.vault",
+    "raw_size_bytes": 5400,
+    "compressed_size_bytes": 65,
+    "vault_size_bytes": 93,
+    "space_saved_bytes": 5400,
+    "compression_ratio_pct": 98.8,
+    "overall_reduction_pct": 100.0,
+    "is_duplicate": true,
+    "status": "Deduplicated (Referenced Existing Vault Blob)"
+  },
+  "EV-TEST-102": {
+    "evidence_id": "EV-TEST-102",
+    "case_id": "CASE-UNIT-02",
+    "filename": "duplicate_system_auth.log",
+    "classification": "Confidential",
+    "custodian": "Agent Watson",
+    "content_hash": "422749cce4b1ffe11bfe5a86f6187a8a2e5e8e6cad6119e0f1a6b1e899507476",
+    "blake2b_hash": "6828e062f14c9b8e1656690011cc1def06b457276669e8ed155f6423738c1959216dc48bb02ea44603971cb099cdace2dcfd6649380c2b310794608513dbc6b0",
+    "vault_file": "422749cce4b1ffe11bfe5a86f6187a8a2e5e8e6cad6119e0f1a6b1e899507476.vault",
+    "raw_size_bytes": 5400,
+    "compressed_size_bytes": 65,
+    "vault_size_bytes": 93,
+    "space_saved_bytes": 5400,
+    "compression_ratio_pct": 98.8,
+    "overall_reduction_pct": 100.0,
+    "is_duplicate": true,
+    "status": "Deduplicated (Referenced Existing Vault Blob)"
+  }
+}

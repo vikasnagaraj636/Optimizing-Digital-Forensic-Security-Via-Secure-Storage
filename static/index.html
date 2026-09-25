@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Forensic Secure Storage & Chain of Custody System</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/three_styles.css">
+    <!-- Google Firebase SDKs (Official Compat CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- Three.js (r128), OrbitControls, and Tween.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+</head>
+<body>
+
+    <!-- AUTHENTICATION & 2FA EMAIL OTP PORTAL OVERLAY -->
+    <div class="auth-portal-overlay" id="auth-portal-overlay">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                    </svg>
+                </div>
+                <h2>DIGITAL FORENSIC ACCESS PORTAL</h2>
+                <p>Google Firebase Cloud & Two-Factor Email OTP Authentication</p>
+            </div>
+
+            <!-- Tab Switcher (Login vs Register) -->
+            <div class="auth-tabs" id="auth-tab-bar">
+                <button type="button" class="auth-tab-btn active" id="tab-login-btn" onclick="showAuthView('login')">Operator Login</button>
+                <button type="button" class="auth-tab-btn" id="tab-register-btn" onclick="showAuthView('register')">Register New Officer</button>
+            </div>
+
+            <!-- VIEW 1: LOGIN -->
+            <div id="auth-login-view">
+                <p style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Quick-Select Demo Operator Profile:</p>
+                <div class="preset-officers-grid">
+                    <div class="preset-chip" onclick="quickFillLogin('investigator@forensics.gov', 'Password@123')">
+                        <strong>Special Agent Miller</strong>
+                        <span>Lead Investigator</span>
+                    </div>
+                    <div class="preset-chip" onclick="quickFillLogin('analyst@forensics.gov', 'Password@123')">
+                        <strong>Dr. Sarah Lin</strong>
+                        <span>Cyber Analyst</span>
+                    </div>
+                    <div class="preset-chip" onclick="quickFillLogin('custodian@forensics.gov', 'Password@123')">
+                        <strong>Cmdr. Marcus Vance</strong>
+                        <span>Vault Custodian</span>
+                    </div>
+                    <div class="preset-chip" onclick="quickFillLogin('auditor@justice.gov', 'Password@123')">
+                        <strong>Hon. Justice Rostova</strong>
+                        <span>Court Auditor</span>
+                    </div>
+                </div>
+
+                <form onsubmit="handleLoginSubmit(event)">
+                    <div class="form-group">
+                        <label>Registered Official Email</label>
+                        <input type="email" id="login-email" class="form-control" required placeholder="operator@forensics.gov">
+                    </div>
+                    <div class="form-group" style="margin-top: 14px;">
+                        <label>Password Credentials</label>
+                        <input type="password" id="login-password" class="form-control" required placeholder="Enter password (e.g. Password@123)">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-login-submit" style="width: 100%; margin-top: 18px;">
+                        🔐 Verify Credentials & Dispatch OTP
+                    </button>
+                </form>
+
+                <div style="display: flex; align-items: center; margin: 16px 0; gap: 10px;">
+                    <hr style="flex: 1; border: 0; border-top: 1px solid var(--border-subtle);">
+                    <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">OR GOOGLE FIREBASE</span>
+                    <hr style="flex: 1; border: 0; border-top: 1px solid var(--border-subtle);">
+                </div>
+
+                <button type="button" class="btn btn-secondary" style="width: 100%; border-color: rgba(0, 240, 255, 0.35); background: rgba(0, 240, 255, 0.05);" onclick="signInWithGoogleFirebase()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                    </svg>
+                    Sign In with Google (Firebase Cloud)
+                </button>
+            </div>
+
+            <!-- VIEW 2: REGISTRATION -->
+            <div id="auth-register-view" style="display: none;">
+                <form onsubmit="handleRegisterSubmit(event)">
+                    <div class="form-group">
+                        <label>Officer / Analyst Full Name</label>
+                        <input type="text" id="reg-name" class="form-control" required placeholder="e.g., Detective Alex Cross">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Assigned Department Role</label>
+                        <select id="reg-role" class="form-control">
+                            <option value="Lead Forensic Investigator">Lead Forensic Investigator</option>
+                            <option value="Senior Cyber Forensic Analyst">Senior Cyber Forensic Analyst</option>
+                            <option value="Master Evidence Vault Custodian">Master Evidence Vault Custodian</option>
+                            <option value="Judicial Court Compliance Auditor">Judicial Court Compliance Auditor</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Official Department Email</label>
+                        <input type="email" id="reg-email" class="form-control" required placeholder="officer@forensics.gov">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Set Secure Password</label>
+                        <input type="password" id="reg-password" class="form-control" required placeholder="Minimum 6 characters">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-reg-submit" style="width: 100%; margin-top: 20px;">
+                        📨 Request Registration OTP
+                    </button>
+                </form>
+            </div>
+
+            <!-- VIEW 3: 2FA EMAIL OTP VERIFICATION -->
+            <div id="auth-otp-view" style="display: none;">
+                <div class="otp-dispatch-banner" id="otp-dispatch-banner">
+                    <span style="font-size: 20px;">📩</span>
+                    <div>
+                        <strong>[SECURE EMAIL DISPATCH SERVICE]</strong><br>
+                        <span id="otp-dispatch-text">Verification OTP dispatched to registered email.</span>
+                    </div>
+                </div>
+
+                <form onsubmit="handleOtpVerification(event)">
+                    <div class="form-group">
+                        <label style="text-align: center; display: block; margin-bottom: 8px;">Enter 6-Digit Verification Code</label>
+                        <input type="text" id="mfa-otp-input" class="form-control otp-digit-input" maxlength="6" required placeholder="------" autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn btn-success" id="btn-otp-verify" style="width: 100%; margin-top: 20px;">
+                        🛡️ Verify OTP & Enter Secure Vault
+                    </button>
+                    <button type="button" class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="cancelOtpVerification()">
+                        &larr; Back to Login
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- 3D CYBER-FORENSIC WEBGL VIEWPORT & HOLOGRAPHIC COMMAND CENTER      -->
+    <!-- ================================================================= -->
+    <div id="webgl-viewport-wrapper">
+        <div id="webgl-canvas-container" style="width: 100%; height: 100%;"></div>
+        <div class="holo-scanlines"></div>
+        <div class="holo-vignette"></div>
+
+        <!-- Emergency Tamper Alert Siren Banner -->
+        <div class="tamper-banner-alert" id="tamper-banner-alert">
+            ⚠️ MALICIOUS TAMPER DETECTED &bull; ZERO-TRUST AUTOMATED PROTOCOL ACTIVE
+        </div>
+
+        <!-- Cinematic Flythrough Tour Active Banner -->
+        <div class="cinematic-banner" id="cinematic-banner">
+            🎥 CINEMATIC FLYTHROUGH TOUR ACTIVE
+        </div>
+
+        <!-- Main 3D HUD Layer -->
+        <div class="hud-layer">
+
+            <!-- Top HUD Bar -->
+            <div class="hud-top-bar hud-interactive">
+                <div class="hud-branding">
+                    <div class="hud-logo-badge">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                        </svg>
+                    </div>
+                    <div class="hud-title-group">
+                        <h1>CYBER FORENSIC 3D COMMAND CENTER</h1>
+                        <p>AES-256-GCM ZERO-KNOWLEDGE ENCRYPTION &bull; IMMUTABLE MERKLE BLOCKCHAIN</p>
+                    </div>
+                </div>
+
+                <!-- Telemetry Counters -->
+                <div class="hud-telemetry-group">
+                    <div class="hud-telemetry-chip">
+                        <span>Seized Artifacts</span>
+                        <strong id="hud-stat-count">0</strong>
+                    </div>
+                    <div class="hud-telemetry-chip">
+                        <span>Storage Ratio</span>
+                        <strong id="hud-stat-ratio">0%</strong>
+                    </div>
+                    <div class="hud-telemetry-chip">
+                        <span>Space Saved</span>
+                        <strong id="hud-stat-saved">0 B</strong>
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="hud-actions-group">
+                    <button class="btn-hud" id="btn-toggle-audio" onclick="toggle3DAudio()">🔇 Audio: MUTED</button>
+                    <button class="btn-hud" id="btn-cinematic-tour" onclick="toggleCinematicTour()">🎥 Tour</button>
+                    <button class="btn-hud" onclick="reset3DCamera()">🎯 Center</button>
+                    <button class="btn-hud btn-hud-console" onclick="toggleForensicMode('2d')">🖥️ 2D Console</button>
+                </div>
+            </div>
+
+            <!-- Left Telemetry Panel (System Status & Hash Monitor) -->
+            <div class="hud-left-panel hud-interactive">
+                <div class="hud-panel-title">
+                    <span>🛡️ SYSTEM INTEGRITY</span>
+                </div>
+                <div class="hud-stat-row">
+                    <span>CIPHER STANDARD:</span>
+                    <strong>AES-256-GCM</strong>
+                </div>
+                <div class="hud-stat-row">
+                    <span>DUAL HASH ENGINE:</span>
+                    <strong>SHA256+BLAKE2b</strong>
+                </div>
+                <div class="hud-stat-row">
+                    <span>KEY DERIVATION:</span>
+                    <strong>PBKDF2-HMAC</strong>
+                </div>
+                <div class="hud-stat-row">
+                    <span>AUDIT COMPLIANCE:</span>
+                    <strong>ISO/IEC 27037</strong>
+                </div>
+                <div class="hash-feed-stream" id="hud-hash-stream">
+                    SCANNING CRYPTOGRAPHIC MERKLE ROOTS...
+                </div>
+            </div>
+
+            <!-- Right Quick Actions Panel -->
+            <div class="hud-right-panel hud-interactive">
+                <div class="hud-panel-title">
+                    <span>⚡ 3D FORENSIC ACTIONS</span>
+                </div>
+                <div class="hud-btn-stack">
+                    <button class="hud-btn-action" onclick="open3DIngestModal()">
+                        <span>📥 Ingest New Evidence</span>
+                        <span>&rarr;</span>
+                    </button>
+                    <button class="hud-btn-action" onclick="switch3DStation('blockchain')">
+                        <span>⛓️ Inspect Chain of Custody</span>
+                        <span>&rarr;</span>
+                    </button>
+                    <button class="hud-btn-action action-tamper" onclick="trigger3DTamperSimulation()">
+                        <span>🧪 Tamper Attack Demo</span>
+                        <span>⚠️</span>
+                    </button>
+                    <button class="hud-btn-action action-repair" onclick="trigger3DRepairSimulation()">
+                        <span>🛡️ Self-Heal & Repair Chain</span>
+                        <span>✨</span>
+                    </button>
+                    <button class="hud-btn-action" onclick="switch3DStation('storage')">
+                        <span>📊 Storage Matrix</span>
+                        <span>&rarr;</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3D Holographic Evidence Inspector Modal -->
+            <div class="holo-evidence-card hidden hud-interactive" id="holo-evidence-card">
+                <div class="holo-card-header">
+                    <div>
+                        <div class="holo-card-title" id="card-ev-id">EV-2026-001</div>
+                        <span class="holo-card-badge" id="card-ev-badge">Confidential</span>
+                    </div>
+                    <button class="holo-close-btn" onclick="closeEvidenceCard()">&times;</button>
+                </div>
+                <div class="holo-kv-list">
+                    <div class="holo-kv-row">
+                        <span class="label">Case ID:</span>
+                        <span class="val" id="card-ev-case">-</span>
+                    </div>
+                    <div class="holo-kv-row">
+                        <span class="label">Original File:</span>
+                        <span class="val" id="card-ev-file">-</span>
+                    </div>
+                    <div class="holo-kv-row">
+                        <span class="label">Custodian:</span>
+                        <span class="val" id="card-ev-custodian">-</span>
+                    </div>
+                    <div class="holo-kv-row">
+                        <span class="label">Optimization:</span>
+                        <span class="val" id="card-ev-ratio">-</span>
+                    </div>
+                    <div>
+                        <span class="label" style="font-size: 10px; color:#94a3b8;">SHA-256 Content Digest:</span>
+                        <div class="holo-hash-box" id="card-ev-sha256">-</div>
+                    </div>
+                    <div>
+                        <span class="label" style="font-size: 10px; color:#94a3b8;">BLAKE2b Integrity Digest:</span>
+                        <div class="holo-hash-box" id="card-ev-blake2b">-</div>
+                    </div>
+                </div>
+                <div class="holo-card-actions">
+                    <button class="btn-holo-action" onclick="verifySelectedEvidence()">🔍 Verify Zero-Trust</button>
+                    <button class="btn-holo-action" onclick="downloadSelectedEvidence()">⬇️ Decrypt & DL</button>
+                    <button class="btn-holo-action" style="grid-column: span 2;" onclick="viewSelectedCertificate()">📜 Court Certificate (ISO/IEC 27037)</button>
+                </div>
+            </div>
+
+            <!-- 3D Holographic Ingestion Overlay -->
+            <div class="holo-ingest-overlay hidden hud-interactive" id="holo-ingest-overlay">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 240, 255, 0.3); padding-bottom: 10px;">
+                    <h3 style="margin: 0; font-size: 14px; color: #00f0ff; letter-spacing: 1px;">⚡ 3D EVIDENCE INGESTION PIPELINE</h3>
+                    <button class="holo-close-btn" onclick="close3DIngestModal()">&times;</button>
+                </div>
+                <form onsubmit="handle3DIngestSubmit(event)" style="margin-top: 14px;">
+                    <div class="holo-drop-box" id="holo-drop-box">
+                        <input type="file" id="ingest-3d-file" style="display: none;" required>
+                        <div style="font-size: 26px; margin-bottom: 6px;">📂</div>
+                        <div style="font-size: 12px; color: #f8fafc; font-weight: 600;" id="ingest-3d-filename">Click or Drag & Drop Forensic File</div>
+                        <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">Automatic Dual-Hashing (SHA-256 + BLAKE2b) & AES-256-GCM</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <div>
+                            <label style="font-size: 10px; color: #94a3b8;">Case Tracking Number</label>
+                            <input type="text" id="ingest-3d-case" class="form-control" value="CASE-2026-3D" style="font-size: 11px; padding: 6px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 10px; color: #94a3b8;">Classification</label>
+                            <select id="ingest-3d-classification" class="form-control" style="font-size: 11px; padding: 6px;">
+                                <option value="Confidential">Confidential</option>
+                                <option value="Secret">Secret</option>
+                                <option value="Top Secret">Top Secret</option>
+                                <option value="Unclassified">Unclassified</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <label style="font-size: 10px; color: #94a3b8;">Acquisition Notes / Seizure Location</label>
+                        <input type="text" id="ingest-3d-notes" class="form-control" value="Digital acquisition from primary evidence device" style="font-size: 11px; padding: 6px;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 16px; font-size: 11.5px; padding: 9px;">
+                        🔐 Ingest, Encrypt (AES-256-GCM) & Commit to Blockchain
+                    </button>
+                </form>
+            </div>
+
+            <!-- Bottom Floating 3D Station Dock -->
+            <div class="hud-station-dock hud-interactive">
+                <button class="station-dock-btn active" data-station="vault">🌐 Vault Matrix</button>
+                <button class="station-dock-btn" data-station="blockchain">⛓️ Blockchain Highway</button>
+                <button class="station-dock-btn" data-station="ingest">⚡ Ingestion Pipeline</button>
+                <button class="station-dock-btn" data-station="tamper">🧪 Tamper Lab</button>
+                <button class="station-dock-btn" data-station="storage">📊 Storage Matrix</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Top Status Bar & Clock -->
+    <div class="top-status-bar">
+        <div class="top-status-left">
+            <div class="status-indicator">
+                <div class="pulse-dot"></div>
+                <span id="system-status-text">FORENSIC NODE: ACTIVE (AES-NI ACCELERATED)</span>
+            </div>
+            <span>|</span>
+            <span>STANDARD: ISO/IEC 27037:2012 COMPLIANT</span>
+            <span>|</span>
+            <button class="btn btn-secondary btn-sm" style="padding: 2px 10px; font-size: 11px; font-family: var(--font-mono); border-color: rgba(255, 183, 3, 0.4); color: var(--amber);" onclick="openFirebaseModal()">
+                ☁️ Google Firebase Cloud
+            </button>
+        </div>
+        <div id="live-utc-clock">UTC 00:00:00</div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header>
+        <div class="brand-wrapper">
+            <div class="brand-shield">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                </svg>
+            </div>
+            <div class="brand-text">
+                <h1>OPTIMIZING DIGITAL FORENSIC SECURITY VIA SECURE STORAGE</h1>
+                <p>Hybrid Cryptography &bull; Lossless Deduplication &bull; Immutable Merkle Blockchain</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="mode-switch-pill" onclick="toggleForensicMode('3d')" title="Open Interactive 3D Command Center">
+                🌐 3D Command Center
+            </button>
+            <div class="user-profile-chip" id="user-profile-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span id="logged-user-display">Special Agent John Miller</span>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="handleLogout()" title="Terminate Secure Session">
+                🚪 Logout
+            </button>
+        </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="nav-container">
+        <button class="tab-btn active" onclick="switchTab('dashboard-tab', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            System Overview
+        </button>
+        <button class="tab-btn" onclick="switchTab('ingest-tab', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Evidence Ingestion
+        </button>
+        <button class="tab-btn" onclick="switchTab('vault-tab', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Secure Evidence Vault
+        </button>
+        <button class="tab-btn" onclick="switchTab('blockchain-tab', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            Chain of Custody
+        </button>
+        <button class="tab-btn" onclick="switchTab('tamper-lab-tab', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            Tamper Detection Lab
+        </button>
+    </nav>
+
+    <!-- Main App Container -->
+    <main class="container">
+
+        <!-- TAB 1: SYSTEM OVERVIEW -->
+        <section id="dashboard-tab" class="tab-content active">
+            <!-- Telemetry Metrics Grid -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-label">Ingested Artifacts</span>
+                        <div class="metric-icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="metric-value" id="stat-evidence-count">0</div>
+                    <div class="metric-meta" id="stat-unique-blobs">0 Unique Blobs</div>
+                </div>
+
+                <div class="metric-card green">
+                    <div class="metric-header">
+                        <span class="metric-label">Storage Optimization</span>
+                        <div class="metric-icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="metric-value" id="stat-reduction-pct">0.0%</div>
+                    <div class="metric-meta">Saved: <strong id="stat-bytes-saved">0 Bytes</strong></div>
+                    <div class="mini-progress-track">
+                        <div class="mini-progress-fill" id="storage-progress-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="metric-card amber">
+                    <div class="metric-header">
+                        <span class="metric-label">Encrypted Vault Space</span>
+                        <div class="metric-icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="metric-value" id="stat-vault-size">0 KB</div>
+                    <div class="metric-meta" id="stat-raw-size">Original: 0 KB</div>
+                </div>
+
+                <div class="metric-card violet">
+                    <div class="metric-header">
+                        <span class="metric-label">Merkle Blockchain Health</span>
+                        <div class="metric-icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="metric-value" id="stat-ledger-status">VERIFIED</div>
+                    <div class="metric-meta" id="stat-total-blocks">0 Cryptographic Blocks</div>
+                </div>
+            </div>
+
+            <!-- Architecture Cards -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <div class="panel-icon-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                <polyline points="2 17 12 22 22 17"></polyline>
+                                <polyline points="2 12 12 17 22 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="panel-title">
+                            <h2>Forensic Security & Optimization Pipeline</h2>
+                            <p>End-to-end cryptographic integrity, storage reduction, and judicial admissibility</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arch-grid">
+                    <div class="arch-card">
+                        <div class="arch-step">Layer 01 &bull; Acquisition</div>
+                        <h3>Dual-Digest Hashing</h3>
+                        <p>Simultaneously computes <strong>SHA-256</strong> and <strong>BLAKE2b</strong> digests at ingestion. Prevents collision vulnerabilities and guarantees non-repudiation.</p>
+                    </div>
+                    <div class="arch-card">
+                        <div class="arch-step">Layer 02 &bull; Optimization</div>
+                        <h3>Deduplication & Deflate</h3>
+                        <p>Content-addressable indexing references existing vault blobs for identical artifacts; applies lossless Deflate compression to reduce memory and disk footprints.</p>
+                    </div>
+                    <div class="arch-card">
+                        <div class="arch-step">Layer 03 &bull; Vaulting</div>
+                        <h3>AES-256-GCM AEAD</h3>
+                        <p>Authenticated symmetric encryption with unique 96-bit random IVs and 128-bit authentication tags. Zero plaintext is ever written to physical storage disks.</p>
+                    </div>
+                    <div class="arch-card">
+                        <div class="arch-step">Layer 04 &bull; Audit Trail</div>
+                        <h3>Merkle Chain of Custody</h3>
+                        <p>Chronological blocks recording every custodial transfer, checkout, and judicial submission, cryptographically linked via SHA-256 and Merkle roots.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Ingested Artifacts Catalog -->
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <div class="panel-icon-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
+                        </div>
+                        <div class="panel-title">
+                            <h2>Recent Evidence Ingestions</h2>
+                            <p>Live catalog of securely ingested artifacts and optimization telemetry</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadDashboard()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="cyber-table">
+                        <thead>
+                            <tr>
+                                <th>Evidence ID</th>
+                                <th>Filename</th>
+                                <th>Case ID</th>
+                                <th>Raw Size</th>
+                                <th>Vault Size</th>
+                                <th>Reduction</th>
+                                <th>Status</th>
+                                <th>Quick Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-recent-table">
+                            <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No evidence ingested yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: EVIDENCE INGESTION -->
+        <section id="ingest-tab" class="tab-content">
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <div class="panel-icon-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="panel-title">
+                            <h2>Evidence Acquisition & Secure Ingestion</h2>
+                            <p>Upload disk images, memory captures, network PCAPs, or case documents</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="evidence-upload-form" onsubmit="handleEvidenceUpload(event)">
+                    <!-- Futuristic Upload Dropzone -->
+                    <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+                        <div class="dropzone-icon-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <h3 id="dropzone-text">Click or Drag & Drop Digital Evidence Artifact</h3>
+                        <p>Forensic disk images (.raw, .dd, .E01), packet logs (.pcap), RAM dumps, or system files</p>
+                        <input type="file" id="file-input" style="display: none;" onchange="handleFileSelect(this)">
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Case Tracking Number</label>
+                            <input type="text" class="form-control" id="case_id" required value="CASE-2026-CRIME-01">
+                        </div>
+                        <div class="form-group">
+                            <label>Lead Investigating Officer / Custodian</label>
+                            <input type="text" class="form-control" id="custodian" required value="Special Agent John Miller">
+                        </div>
+                        <div class="form-group">
+                            <label>Security Classification</label>
+                            <select class="form-control" id="classification">
+                                <option value="Confidential" selected>Confidential</option>
+                                <option value="Restricted">Restricted</option>
+                                <option value="Secret">Secret (High Priority)</option>
+                                <option value="Top Secret">Top Secret (Court Restricted)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>Forensic Acquisition Remarks & Source Device Spec</label>
+                        <textarea class="form-control" id="notes" rows="3" placeholder="Specify device make, model, serial number, seizure timestamp, and acquisition environment..."></textarea>
+                    </div>
+
+                    <div style="margin-top: 28px; display: flex; justify-content: flex-end; gap: 14px;">
+                        <button type="reset" class="btn btn-secondary">Reset Form</button>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-upload">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            Ingest, Optimize & Commit to Blockchain
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- TAB 3: EVIDENCE VAULT -->
+        <section id="vault-tab" class="tab-content">
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <div class="panel-icon-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                        <div class="panel-title">
+                            <h2>Master Digital Forensic Evidence Vault</h2>
+                            <p>Encrypted vault records with real-time verification and custody management</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="text" id="vault-search-input" class="form-control" placeholder="Search by Case, ID, or Filename..." onkeyup="filterVaultTable()" style="max-width: 300px; padding: 8px 14px;">
+                        <button class="btn btn-secondary btn-sm" onclick="loadVaultTable()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="cyber-table" id="master-vault-table">
+                        <thead>
+                            <tr>
+                                <th>Evidence ID</th>
+                                <th>Artifact Name</th>
+                                <th>Case ID</th>
+                                <th>Custodian</th>
+                                <th>SHA-256 Digest</th>
+                                <th>Storage Saved</th>
+                                <th>Custodial Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vault-table-body">
+                            <tr><td colspan="7" style="text-align: center;">Loading Evidence Vault...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: IMMUTABLE CHAIN OF CUSTODY -->
+        <section id="blockchain-tab" class="tab-content">
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <div class="panel-icon-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                            </svg>
+                        </div>
+                        <div class="panel-title">
+                            <h2>Immutable Merkle-Blockchain Chain of Custody</h2>
+                            <p>Append-only audit trail guaranteeing non-repudiation and chronological integrity</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-success btn-sm" onclick="auditBlockchainLedger()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 11 12 14 22 4"></polyline>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                        </svg>
+                        Audit Full Ledger Integrity
+                    </button>
+                </div>
+
+                <div class="blockchain-stream" id="blockchain-stream">
+                    <!-- Blocks dynamically populated -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: TAMPER DETECTION LAB -->
+        <section id="tamper-lab-tab" class="tab-content">
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <div class="panel-icon-badge" style="border-color: rgba(255, 51, 102, 0.4); background: rgba(255, 51, 102, 0.1);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#ff3366" stroke-width="2">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                        <div class="panel-title">
+                            <h2>Examiner Defense & Tamper Detection Laboratory</h2>
+                            <p>Demonstrate mathematical integrity defense by simulating disk-level evidence alteration</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="repairLedger()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                        </svg>
+                        Restore/Repair Ledger
+                    </button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <!-- Attack Simulator -->
+                    <div style="background: rgba(13, 20, 36, 0.85); padding: 24px; border-radius: 14px; border: 1px solid rgba(255, 51, 102, 0.35);">
+                        <h3 style="color: var(--crimson); font-family: var(--font-heading); margin-bottom: 10px; font-size: 17px; display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>
+                            Adversarial Attack Simulation
+                        </h3>
+                        <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 16px;">
+                            Simulate an unauthorized adversary modifying historical custody logs or evidence records directly on disk without recomputing cryptographic hashes.
+                        </p>
+                        <div class="form-group">
+                            <label>Target Block Index to Corrupt</label>
+                            <input type="number" id="tamper-block-index" class="form-control" value="1" min="1">
+                        </div>
+                        <div class="form-group" style="margin-top: 12px;">
+                            <label>Malicious Payload Injection</label>
+                            <input type="text" id="tamper-action-text" class="form-control" value="UNAUTHORIZED_ALTERATION_AND_EVIDENCE_TAMPER">
+                        </div>
+                        <button class="btn btn-danger" style="margin-top: 20px; width: 100%;" onclick="executeTamperTest()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            Execute Attack (Corrupt Block on Disk)
+                        </button>
+                    </div>
+
+                    <!-- Zero-Trust Cryptographic Auditor -->
+                    <div style="background: rgba(13, 20, 36, 0.85); padding: 24px; border-radius: 14px; border: 1px solid var(--border-medium);">
+                        <h3 style="color: var(--cyan); font-family: var(--font-heading); margin-bottom: 10px; font-size: 17px; display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            Zero-Trust Cryptographic Auditor
+                        </h3>
+                        <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 16px;">
+                            Executes an exhaustive audit across the entire chain from Genesis block to current, recomputing SHA-256 block hashes, predecessor links, and Merkle roots.
+                        </p>
+                        <button class="btn btn-primary" style="width: 100%; margin-bottom: 16px;" onclick="runAuditInspector()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            Run Zero-Trust Cryptographic Audit
+                        </button>
+                        <div class="cyber-terminal" id="tamper-audit-output">
+                            [SYS] Cryptographic Audit Engine Standing By...<br>
+                            [SYS] Ready to inspect block sequence and Merkle consistency.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custody Transfer Modal -->
+    <div class="modal-overlay" id="transfer-modal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('transfer-modal')">&times;</button>
+            <h2 style="color: #fff; font-family: var(--font-heading); margin-bottom: 16px; font-size: 20px;">🔄 Custody Handover & Transfer Protocol</h2>
+            <form id="transfer-form" onsubmit="handleCustodyTransfer(event)">
+                <input type="hidden" id="transfer-evidence-id">
+                <div class="form-group">
+                    <label>Evidence Identification</label>
+                    <input type="text" id="transfer-evidence-id-display" class="form-control" disabled>
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label>Transfer Classification & Action</label>
+                    <select id="transfer-action" class="form-control">
+                        <option value="TRANSFERRED_TO_FORENSIC_ANALYST">Transfer to Forensic Analyst (Laboratory Examination)</option>
+                        <option value="TRANSFERRED_TO_PROSECUTOR">Transfer to Prosecuting Authority</option>
+                        <option value="SUBMITTED_TO_COURT_REGISTRY">Submission to Judicial Court Registry</option>
+                        <option value="RETURNED_TO_EVIDENCE_VAULT">Return to Secure Evidence Vault</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label>Current Authorized Custodian</label>
+                    <input type="text" id="transfer-current-custodian" class="form-control" required value="Special Agent John Miller">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label>Authorized Recipient Actor</label>
+                    <input type="text" id="transfer-recipient" class="form-control" required placeholder="e.g., Dr. Sarah Lin (Senior Cyber Forensic Analyst)">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label>Transfer Justification / Court Order Reference</label>
+                    <textarea id="transfer-notes" class="form-control" rows="2" placeholder="Reference judicial warrant # or forensic examination authorization order..."></textarea>
+                </div>
+                <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('transfer-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Commit Transfer to Blockchain</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Verification Result Modal -->
+    <div class="modal-overlay" id="verify-modal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('verify-modal')">&times;</button>
+            <h2 style="color: #fff; font-family: var(--font-heading); margin-bottom: 16px; font-size: 20px;" id="verify-modal-title">🔍 Cryptographic Integrity Verification</h2>
+            <div id="verify-modal-content">
+                <!-- Populated dynamically -->
+            </div>
+            <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('verify-modal')">Close Audit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Firebase Cloud Settings Modal -->
+    <div class="modal-overlay" id="firebase-modal">
+        <div class="modal-box" style="max-width: 620px;">
+            <button class="modal-close" onclick="closeModal('firebase-modal')">&times;</button>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(255, 183, 3, 0.15); border: 1px solid var(--amber); display: flex; align-items: center; justify-content: center;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffb703">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 style="color: #fff; font-family: var(--font-heading); font-size: 19px;">Google Firebase Cloud Integration</h2>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Sync evidence and blockchain blocks to Google Cloud Firestore</p>
+                </div>
+            </div>
+
+            <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.3); border-radius: 10px; padding: 14px; margin-bottom: 20px; font-size: 12.5px; color: var(--text-primary);">
+                <strong>☁️ Cloud Sync Capabilities:</strong>
+                <ul style="margin-left: 20px; margin-top: 6px; line-height: 1.6; color: var(--text-secondary);">
+                    <li><strong>Firebase Authentication</strong>: One-click Sign-In with Google</li>
+                    <li><strong>Cloud Firestore</strong>: Mirrored immutable evidence & blockchain audit blocks</li>
+                    <li><strong>Decentralized Redundancy</strong>: Eliminates single-point-of-failure risks</li>
+                </ul>
+            </div>
+
+            <form onsubmit="handleFirebaseConfigSave(event)">
+                <div class="form-group">
+                    <label>Firebase Cloud Sync Status</label>
+                    <select id="fb-enabled" class="form-control">
+                        <option value="true">Enabled (Active Cloud Synchronization)</option>
+                        <option value="false">Disabled (Local Forensic Vault Only)</option>
+                    </select>
+                </div>
+                <div class="form-grid" style="margin-top: 12px;">
+                    <div class="form-group">
+                        <label>Firebase API Key</label>
+                        <input type="text" id="fb-api-key" class="form-control" placeholder="AIzaSy...">
+                    </div>
+                    <div class="form-group">
+                        <label>Auth Domain</label>
+                        <input type="text" id="fb-auth-domain" class="form-control" placeholder="your-app.firebaseapp.com">
+                    </div>
+                </div>
+                <div class="form-grid" style="margin-top: 12px;">
+                    <div class="form-group">
+                        <label>Project ID</label>
+                        <input type="text" id="fb-project-id" class="form-control" placeholder="digital-forensics-vault">
+                    </div>
+                    <div class="form-group">
+                        <label>Firestore Storage Bucket</label>
+                        <input type="text" id="fb-storage-bucket" class="form-control" placeholder="your-app.appspot.com">
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" class="btn btn-success btn-sm" onclick="syncVaultToFirebaseFirestore()">
+                        🚀 Sync Evidence to Cloud Firestore
+                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('firebase-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Firebase Config</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Global Toast Notification -->
+    <div class="toast" id="toast">Notification Message</div>
+
+    <script src="/static/js/three_forensics.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
