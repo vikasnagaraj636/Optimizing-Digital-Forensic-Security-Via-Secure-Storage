@@ -14,6 +14,202 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+
+    <!-- ============================================================
+         VIBRANT 3D EXTRA STYLES — Floating Particles, Depth, Neon
+         ============================================================ -->
+    <style>
+        /* ---- FLOATING NEON PARTICLE CANVAS ---- */
+        #vibrant-particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ---- 3D PERSPECTIVE on main layout wrappers ---- */
+        .container, .glass-panel, .metrics-grid {
+            transform-style: preserve-3d;
+        }
+
+        /* ---- EXTRA DEPTH: Floating colored orbs behind content ---- */
+        .container::before {
+            content: '';
+            position: fixed;
+            top: 20%; left: -10%;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,245,255,0.04), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: orbFloat1 15s ease-in-out infinite alternate;
+        }
+        @keyframes orbFloat1 {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(8%, 5%) scale(1.15); }
+        }
+
+        /* ---- VIVID section dividers ---- */
+        .panel-header { position: relative; }
+
+        /* ---- NEON GLOW on all interactive buttons hover ---- */
+        button:focus-visible, a:focus-visible {
+            outline: 2px solid rgba(0, 245, 255, 0.8);
+            outline-offset: 3px;
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.4);
+        }
+
+        /* ---- ENHANCED METRIC VALUE glows ---- */
+        .metric-value { position: relative; }
+
+        /* ---- RAINBOW TAB INDICATOR ---- */
+        .tab-btn.active {
+            position: relative;
+        }
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, #00f5ff, #ff00e5, #00ff94);
+            box-shadow: 0 0 12px rgba(0,245,255,0.6);
+            animation: tabGlow 2s ease-in-out infinite alternate;
+        }
+        @keyframes tabGlow {
+            from { box-shadow: 0 0 8px rgba(0,245,255,0.5); width: 50%; }
+            to   { box-shadow: 0 0 16px rgba(255,0,229,0.6); width: 70%; }
+        }
+
+        /* ---- CYBER TERMINAL extra effects ---- */
+        .cyber-terminal {
+            position: relative;
+        }
+        .cyber-terminal::before {
+            content: '> ';
+            color: #00f5ff;
+            text-shadow: 0 0 8px #00f5ff;
+        }
+
+        /* ---- BLOCK CARD: colored per index ---- */
+        .block-card:nth-child(3n+1) { border-color: rgba(0,245,255,0.25); }
+        .block-card:nth-child(3n+1) .block-indicator { background: radial-gradient(circle, #00f5ff, rgba(0,245,255,0.2)); box-shadow: 0 0 15px #00f5ff; }
+        .block-card:nth-child(3n+2) { border-color: rgba(255,0,229,0.25); }
+        .block-card:nth-child(3n+2) .block-indicator { background: radial-gradient(circle, #ff00e5, rgba(255,0,229,0.2)); box-shadow: 0 0 15px #ff00e5; }
+        .block-card:nth-child(3n)   { border-color: rgba(0,255,148,0.25); }
+        .block-card:nth-child(3n)   .block-indicator { background: radial-gradient(circle, #00ff94, rgba(0,255,148,0.2)); box-shadow: 0 0 15px #00ff94; }
+
+        /* ---- ARCH CARDS vivid step colors ---- */
+        .arch-card:nth-child(1) { --arch-color: #00f5ff; }
+        .arch-card:nth-child(2) { --arch-color: #a855f7; }
+        .arch-card:nth-child(3) { --arch-color: #00ff94; }
+        .arch-card:nth-child(4) { --arch-color: #ffbe00; }
+        .arch-card:nth-child(5) { --arch-color: #ff00e5; }
+        .arch-card:nth-child(6) { --arch-color: #ff6600; }
+        .arch-card { border-color: var(--arch-color, #00f5ff) !important; }
+        .arch-card::before { background: linear-gradient(180deg, var(--arch-color, #00f5ff), transparent) !important; box-shadow: 0 0 10px var(--arch-color, #00f5ff) !important; }
+        .arch-step { color: var(--arch-color, #00f5ff) !important; text-shadow: 0 0 8px var(--arch-color, #00f5ff) !important; }
+
+        /* ---- SECTION TITLES with gradient text ---- */
+        .panel-title h2 {
+            background: linear-gradient(90deg, #ffffff 0%, #00f5ff 50%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ---- BADGE hover pop ---- */
+        .badge {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: default;
+        }
+        .badge:hover {
+            transform: scale(1.08) translateY(-1px);
+        }
+
+        /* ---- 3D TABLE ROWS ---- */
+        .cyber-table tbody tr {
+            position: relative;
+        }
+        .cyber-table tbody tr::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 50%;
+            width: 0; height: 80%;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, var(--cyan), var(--magenta));
+            border-radius: 2px;
+            transition: width 0.2s ease;
+            box-shadow: 0 0 10px var(--cyan);
+        }
+        .cyber-table tbody tr:hover::before { width: 3px; }
+
+        /* ---- MODAL box top rainbow strip ---- */
+        .modal-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00f5ff, #a855f7, #ff00e5, #00ff94);
+            border-radius: 22px 22px 0 0;
+            box-shadow: 0 0 20px rgba(0,245,255,0.4);
+            animation: rainbowShift 4s linear infinite;
+            background-size: 200% 100%;
+        }
+        @keyframes rainbowShift {
+            0%   { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        /* ---- TOAST: color variants ---- */
+        .toast.success { border-color: #00ff94; box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(0,255,148,0.3); }
+        .toast.error   { border-color: #ff2257; box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(255,34,87,0.3); }
+        .toast.warning { border-color: #ffbe00; box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(255,190,0,0.3); }
+
+        /* ---- FORM CONTROLS: colored focus rings by type ---- */
+        select.form-control:focus { border-color: #a855f7; box-shadow: 0 0 20px rgba(168,85,247,0.3); }
+        textarea.form-control:focus { border-color: #00ff94; box-shadow: 0 0 20px rgba(0,255,148,0.3); }
+
+        /* ---- PRESET CHIP vibrant hover colors ---- */
+        .preset-chip:nth-child(1):hover { border-color: #00f5ff; background: linear-gradient(135deg, rgba(0,245,255,0.1), rgba(0,245,255,0.04)); }
+        .preset-chip:nth-child(2):hover { border-color: #a855f7; background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(168,85,247,0.04)); }
+        .preset-chip:nth-child(3):hover { border-color: #00ff94; background: linear-gradient(135deg, rgba(0,255,148,0.1), rgba(0,255,148,0.04)); }
+        .preset-chip:nth-child(4):hover { border-color: #ffbe00; background: linear-gradient(135deg, rgba(255,190,0,0.1), rgba(255,190,0,0.04)); }
+
+        /* ---- SCROLLBAR for panels ---- */
+        .glass-panel::-webkit-scrollbar { width: 4px; }
+        .glass-panel::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00f5ff, #a855f7); border-radius: 4px; }
+
+        /* ---- VIBRANT TOP STATUS BAR ACCENTS ---- */
+        .top-status-bar .status-indicator:nth-child(1) { color: #00f5ff; text-shadow: 0 0 8px rgba(0,245,255,0.5); }
+        .top-status-bar .status-indicator:nth-child(2) { color: #00ff94; text-shadow: 0 0 8px rgba(0,255,148,0.5); }
+        .top-status-bar .status-indicator:nth-child(3) { color: #ffbe00; text-shadow: 0 0 8px rgba(255,190,0,0.5); }
+
+        /* ---- HEADER brand text 3D depth ---- */
+        header {
+            transform-style: preserve-3d;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,245,255,0.4), rgba(255,0,229,0.3), rgba(168,85,247,0.4), transparent);
+            box-shadow: 0 0 10px rgba(0,245,255,0.2);
+        }
+
+        /* ---- 3D DEPTH SHADOW on headers ---- */
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 0; right: 0;
+            height: 20px;
+            background: linear-gradient(180deg, rgba(0,245,255,0.04), transparent);
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
 

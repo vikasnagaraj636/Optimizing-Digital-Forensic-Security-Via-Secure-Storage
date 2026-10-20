@@ -42,6 +42,11 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", smtp_cfg.get("smtp_port", 587)))
 SMTP_USER = os.getenv("SMTP_USER", smtp_cfg.get("smtp_email", ""))
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", smtp_cfg.get("smtp_app_password", ""))
 SMTP_FROM = os.getenv("SMTP_FROM", smtp_cfg.get("smtp_email", "forensics-lab@court.gov"))
+# LIAR Blockchain Network Configuration
+# The LIAR network is an external immutable ledger used for cross‑chain verification.
+# Provide the RPC endpoint (e.g., HTTP JSON‑RPC) and optional API key.
+LIAR_RPC_ENDPOINT = os.getenv("LIAR_RPC_ENDPOINT", "https://liar-blockchain.example.com/rpc")
+LIAR_API_KEY = os.getenv("LIAR_API_KEY", "")
 
 # Firebase Configuration File
 FIREBASE_CONFIG_FILE = BASE_DIR / "firebase_config.json"
